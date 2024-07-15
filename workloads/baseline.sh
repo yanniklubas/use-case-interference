@@ -99,7 +99,7 @@ execute_remote_commands() {
 copy_file() {
 	local src="$1"
 	local dst="$2"
-	if [ -f "$dst" ]; then
+	if [ ! -f "$dst" ]; then
 		cp "$src" "$dst"
 	fi
 }
