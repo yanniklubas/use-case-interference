@@ -24,7 +24,7 @@ services:
         "--ip",
         "loadgenerator",
         "-t",
-        "${DIRECTOR_THREADS?No director threads defined}",
+        "${THREADS?No director threads defined}",
         "--yaml",
         "/opt/load_generator.yml",
         "--load",
