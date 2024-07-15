@@ -194,7 +194,7 @@ benchmark() {
 collect_prometheus_metrics() {
 	local cmds=(
 		"rm /tmp/metrics.tar.gz 2>/dev/null"
-		"docker run --rm -v /tmp:/backup -v $volume_name:/data busybox tar -czf /backup/metrics.tar.gz /data/"
+		"docker run --user 65534:65534 --rm -v /tmp:/backup -v $volume_name:/data busybox tar -czf /backup/metrics.tar.gz /data/"
 	)
 	execute_remote_commands "$user" "$server_ip" "${cmds[@]}"
 	scp "$user"@"$server_ip":/tmp/metrics.tar.gz "$measurements_dir/metrics.tar.gz"
