@@ -8,7 +8,6 @@ services:
       - '{{ACMEAIR_WEB_HOST}}'
     common_headers:
       Content-Type: application/json
-      Connection: close
 setup_requests:
   - service_name: acmeair-web
     method: GET
