@@ -1,11 +1,5 @@
 services:
-  loadgenerator-1:
-    build:
-      context: "."
-      dockerfile: loadgenerator.Dockerfile
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-  loadgenerator-2:
+  loadgenerator:
     build:
       context: "."
       dockerfile: loadgenerator.Dockerfile
@@ -28,7 +22,7 @@ services:
         "/opt/httploadgenerator/httploadgenerator.jar",
         "director",
         "--ip",
-        "loadgenerator-1,loadgenerator-2",
+        "loadgenerator",
         "-t",
         "${THREADS?No director threads defined}",
         "--yaml",
