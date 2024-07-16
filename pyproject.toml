@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=63.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "interference"
+description = "A use case study for interference detection."
+version = "0.1.0"
+requires-python = ">=3.9"
+dependencies = ["numpy>=2.0.0,<2.1.0", "matplotlib>=3.9.0,<3.10.0"]
+
+[project.scripts]
+profile = "interference.profile:main"
