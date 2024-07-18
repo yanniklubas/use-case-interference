@@ -63,7 +63,7 @@ parse_config() {
 		log_fatal "timeout" "timeout_ms"
 	fi
 	if [ -z "$profile" ]; then
-		log_fatal "workload" "workload"
+		log_fatal "profile" "profile"
 	fi
 	if [ -z "$threads" ]; then
 		log_fatal "threads" "threads"
@@ -158,37 +158,46 @@ setup() {
 
 benchmark() {
 
-	local start_cmds=(
-		"cd \$HOME/$APPLICATION_NAME"
-		"docker compose up --build --detach --force-recreate --wait --quiet-pull 2>/dev/null >&2"
-	)
-	execute_remote_commands "$user" "$server_ip" "${start_cmds[@]}"
+	for step in 1 2 3 4 5; do
+		local step_dir="$measurements_dir/step-$step"
+		mkdir -p "$step_dir"
+		local profile_file="$profile-$step.csv"
+		for ((repeat = 1; repeat <= 30; repeat++)); do
+			local repeat_dir="$step_dir/repeat-$repeat"
+			mkdir -p "$repeat_dir"
+			local start_cmds=(
+				"cd \$HOME/$APPLICATION_NAME"
+				"docker compose up --build --detach --force-recreate --wait --quiet-pull 2>/dev/null >&2"
+			)
+			execute_remote_commands "$user" "$server_ip" "${start_cmds[@]}"
 
-	printf "Loading database...\n" >&2
+			printf "Loading database...\n" >&2
 
-	curl "http://$server_ip:$PORT/rest/api/loader/load"
+			curl "http://$server_ip:$PORT/rest/api/loader/load"
 
-	local yaml_file
-	yaml_file=$(mktemp)
-	sed -e 's/{{ACMEAIR_WEB_HOST}}/'"$server_ip"':'"$PORT"'/g' "$SCRIPT_PATH/workload.yml" >"$yaml_file"
-	YAML_PATH="$yaml_file" \
-		BENCHMARK_RUN="$measurements_dir" \
-		PROFILE="$SCRIPT_PATH/$profile" \
-		THREADS="$threads" \
-		VIRTUAL_USERS="$virtual_users" \
-		TIMEOUT="$timeout_ms" \
-		WARMUP_DURATION="$warmup_duration_sec" \
-		WARMUP_RPS="$warmup_rps" \
-		WARMUP_PAUSE="$warmup_pause_sec" \
-		docker compose up \
-		--build --abort-on-container-exit --force-recreate
+			local yaml_file
+			yaml_file=$(mktemp)
+			sed -e 's/{{ACMEAIR_WEB_HOST}}/'"$server_ip"':'"$PORT"'/g' "$SCRIPT_PATH/workload.yml" >"$yaml_file"
+			YAML_PATH="$yaml_file" \
+				BENCHMARK_RUN="$repeat_dir" \
+				PROFILE="$SCRIPT_PATH/$profile_file" \
+				THREADS="$threads" \
+				VIRTUAL_USERS="$virtual_users" \
+				TIMEOUT="$timeout_ms" \
+				WARMUP_DURATION="$warmup_duration_sec" \
+				WARMUP_RPS="$warmup_rps" \
+				WARMUP_PAUSE="$warmup_pause_sec" \
+				docker compose up \
+				--build --abort-on-container-exit --force-recreate
 
-	local stop_cmds=(
-		"cd \$HOME/$APPLICATION_NAME"
-		"docker compose down -v 2>/dev/null >&2"
-	)
-	execute_remote_commands "$user" "$server_ip" "${stop_cmds[@]}"
-	rm "$yaml_file"
+			local stop_cmds=(
+				"cd \$HOME/$APPLICATION_NAME"
+				"docker compose down -v 2>/dev/null >&2"
+			)
+			execute_remote_commands "$user" "$server_ip" "${stop_cmds[@]}"
+			rm "$yaml_file"
+		done
+	done
 }
 
 collect_prometheus_metrics() {
