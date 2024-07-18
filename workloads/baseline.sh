@@ -130,7 +130,7 @@ save_config() {
 	local config_file
 	config_file="$out/config.yml"
 	local duration
-	duration=$(wc -l <"$profile")
+	duration=$(wc -l <"$profile-1.csv")
 	duration=$(echo "$duration" | xargs)
 	printf "Saving benchmark configuration to %s\n" "$config_file" >&2
 	printf "duration: %d\n" "$duration" >"$config_file"
